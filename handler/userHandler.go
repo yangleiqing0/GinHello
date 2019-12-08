@@ -1,36 +1,41 @@
 package handler
 
-
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"proxy_download/initDB"
 	"proxy_download/model"
 )
 
-func UserList(context *gin.Context) {
+func UserDetail(context *gin.Context) {
+	db := initDB.DbInit()
 	log.Println(">>> this is UserListHandler <<<")
-	username := context.Param("name")
-	age := context.Query("age")
-	context.String(http.StatusOK, "hello" +  username +  age + "岁 ")
+	id := context.Param("id")
+	log.Println("id = ", id)
+	var user model.User
+	err := db.Where("id = ?", id).First(&model.User{}).Scan(&user).Error
+	if err != nil {
+		fmt.Println("query user err = ", err)
+		return
+	}
+	log.Printf("user is %v", user.Name)
+	context.String(http.StatusOK, "hello "+user.Name)
 }
 
 func UserEdit(context *gin.Context) {
-	//name := context.PostForm("name")
-	//email := context.PostForm("email")
-	//password := context.DefaultPostForm("password", "Wa123456")
-	//println("name:", name, "email:", email, "password:", password)
+
 	var user model.User
 	if err := context.ShouldBind(&user); err != nil {
 		context.String(http.StatusBadRequest, "输入的数据不合法")
 		log.Panicln("err ->", err.Error())
 	}
 	id, err := user.Save()
-	if err != nil{
-	    fmt.Println("save user err ", err)
-	    return
-	}
+	if err != nil {
+		fmt.Println("save user err ", err)
+		context.String(http.StatusBadRequest, "save user err"+err.Error())
 
+	}
 	context.String(http.StatusOK, "编辑用户成功, id:", id)
 }
