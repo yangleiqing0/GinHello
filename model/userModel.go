@@ -13,8 +13,6 @@ type User struct {
 	Password string `form:"password" gorm:"not null" binding:"required"`
 }
 
-var db *gorm.DB
-
 func init() {
 
 	db = DbInit()

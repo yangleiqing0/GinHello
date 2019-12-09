@@ -10,9 +10,15 @@ func SetupRouter() *gin.Engine {
 	// 添加 Get 请求路由
 	router.GET("/", handler.IndexHandler)
 
+	mysql := router.Group("/mysql")
+	{
+		mysql.GET("/detail/:id", handler.MysqlDetail)
+		mysql.GET("/list", handler.MysqlList)
+		mysql.POST("/edit", handler.MysqlEdit)
+	}
 	user := router.Group("/user")
 	{
-		user.GET("/:id", handler.UserDetail)
+		user.GET("/detail/:id", handler.UserDetail)
 		user.POST("/edit", handler.UserEdit)
 	}
 
