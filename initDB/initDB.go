@@ -5,12 +5,13 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func DbInit() *gorm.DB{
+func DbInit() *gorm.DB {
 
 	db := NewConn()
 
 	db.DB().SetMaxOpenConns(10)
 	db.DB().SetMaxIdleConns(10)
+	db.LogMode(true)
 
 	// 自动迁移模式
 	//db.AutoMigrate(&model.UserModel{})

@@ -14,6 +14,7 @@ func SetupRouter() *gin.Engine {
 	{
 		mysql.GET("/detail/:id", handler.MysqlDetail)
 		mysql.GET("/list", handler.MysqlList)
+		mysql.POST("/del", handler.MysqlDel)
 		mysql.POST("/edit", handler.MysqlEdit)
 	}
 	user := router.Group("/user")

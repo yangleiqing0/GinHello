@@ -21,7 +21,7 @@ func main() {
 		}
 	}()
 
-	Db.AutoMigrate(&model.Mysql{})
+	Db.AutoMigrate(&model.Mysql{}, &model.User{})
 
 	_ = router.Run()
 

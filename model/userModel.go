@@ -1,13 +1,11 @@
 package model
 
 import (
-	"github.com/jinzhu/gorm"
 	"log"
-	. "proxy_download/initDB"
 )
 
 type User struct {
-	gorm.Model
+	BaseModel
 	Name     string `form:"name" gorm:"unique;not null" binding:"required"`
 	Email    string `form:"email" binding:"email" gorm:"not null" binding:"required"`
 	Password string `form:"password" gorm:"not null" binding:"required"`
@@ -15,13 +13,6 @@ type User struct {
 
 func init() {
 
-	db = DbInit()
-
-	if !db.HasTable(&User{}) {
-		if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8").CreateTable(&User{}).Error; err != nil {
-			panic(err)
-		}
-	}
 }
 
 func (user *User) Save() (id int64, err error) {

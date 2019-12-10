@@ -7,13 +7,16 @@ import (
 	"net/http"
 	"proxy_download/initDB"
 	"proxy_download/model"
+	"strconv"
 )
 
-var mysql, mysqls model.Mysql
+type NullInterface interface {
+}
 
 func MysqlDetail(context *gin.Context) {
+	var mysql model.Mysql
 	db := initDB.DbInit()
-	log.Println(">>> this is MysqlListHandler <<<")
+	log.Println(">>> this is MysqlDetailHandler <<<")
 	id := context.Param("id")
 	log.Println("id = ", id)
 
@@ -23,35 +26,41 @@ func MysqlDetail(context *gin.Context) {
 		return
 	}
 	log.Printf("mysql is %v", mysql.Ip)
-	context.String(http.StatusOK, "hello "+mysql.Ip)
+	context.JSON(http.StatusOK, gin.H{"list": mysql})
 }
 
 func MysqlEdit(context *gin.Context) {
+	var mysql model.Mysql
 
 	if err := context.ShouldBind(&mysql); err != nil {
-		context.String(http.StatusBadRequest, "输入的数据不合法")
+		context.JSON(http.StatusOK, gin.H{"err": "输入的数据不合法"})
 		log.Panicln("err ->", err.Error())
+		return
+	}
+	if mysql.ID != 0 {
+		err := mysql.Update()
+		if err != nil {
+			fmt.Println("update mysql err = ", err)
+			context.JSON(http.StatusBadRequest, gin.H{"err": "update mysql err" + err.Error()})
+			return
+		}
+		context.JSON(http.StatusOK, gin.H{"msg": "update mysql success"})
+		return
 	}
 	id, err := mysql.Save()
 	if err != nil {
 		fmt.Println("save mysql err ", err)
-		context.String(http.StatusBadRequest, "save mysql err"+err.Error())
-
+		context.JSON(http.StatusBadRequest, gin.H{"err": "save mysql err" + err.Error()})
+		return
 	}
-	context.String(http.StatusOK, "编辑mysql成功, id:", id)
+	context.JSON(http.StatusOK, gin.H{"msg": "save mysql success, id:" + strconv.FormatInt(id, 10)})
 }
 
 func MysqlList(context *gin.Context) {
+	var mysqls []model.Mysql
 	db := initDB.DbInit()
-	r := map[string]interface{}{"list": nil}
 
-	result := db.Find(&mysqls)
-	if result.RecordNotFound() {
-		context.JSON(http.StatusOK, r)
-		return
-	}
-
-	err := result.Error
+	err := db.Order("updated_at desc, id desc").Find(&mysqls).Error
 
 	if err != nil {
 		err := fmt.Errorf("query table mysql err = %v", err.Error())
@@ -59,6 +68,24 @@ func MysqlList(context *gin.Context) {
 		context.JSON(http.StatusBadGateway, err)
 		return
 	}
-	fmt.Println("query result = ", mysqls)
+
 	context.JSON(http.StatusOK, gin.H{"list": mysqls})
+}
+
+func MysqlDel(context *gin.Context) {
+
+	var mysqls NullInterface
+
+	err := context.BindJSON(&mysqls)
+
+	if err != nil {
+		log.Println("json.Unmarshal err = ", err)
+		context.JSON(http.StatusOK, gin.H{"err": "get ids error"})
+		return
+	}
+	if ids, ok := mysqls.(map[string]interface{}); ok == true {
+		log.Println(ids)
+	}
+	context.JSON(http.StatusOK, gin.H{"msg": "del success"})
+
 }
