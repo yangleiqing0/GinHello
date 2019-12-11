@@ -38,7 +38,7 @@ func Pagination(db *gorm.DB, page, pagesize int64) *gorm.DB {
 	return db
 }
 
-func (mysql Mysql) List(page, pagesize int64) (mysqls []Mysql, count int64, err error) {
+func (mysql *Mysql) List(page, pagesize int64) (mysqls []Mysql, count int64, err error) {
 	err = Pagination(db.Order("updated_at desc, id desc"), page, pagesize).Find(&mysqls).Error
 	if err != nil {
 		return
