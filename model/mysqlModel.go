@@ -25,6 +25,31 @@ func init() {
 	db = DbInit()
 }
 
+func (mysql *Mysql) Detail(id int64) (*Mysql, error) {
+	err := db.Where("id = ?", id).First(&Mysql{}).Scan(&mysql).Error
+	if err != nil {
+		return mysql, err
+	}
+	return mysql, err
+}
+
+func Pagination(db *gorm.DB, page, pagesize int64) *gorm.DB {
+	db = db.Offset((page - 1) * pagesize).Limit(pagesize)
+	return db
+}
+
+func (mysql Mysql) List(page, pagesize int64) (mysqls []Mysql, count int64, err error) {
+	err = Pagination(db.Order("updated_at desc, id desc"), page, pagesize).Find(&mysqls).Error
+	if err != nil {
+		return
+	}
+	err = db.Model(&mysql).Count(&count).Error
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (mysql *Mysql) Save() (id int64, err error) {
 
 	err = db.Create(mysql).Error
@@ -45,10 +70,19 @@ func (mysql *Mysql) Update() (err error) {
 	return
 }
 
-func (mysql *Mysql) Delete() (err error) {
-	err = db.Delete(&mysql).Error
+func (mysql *Mysql) Delete(id float64) (err error) {
+	err = db.Where("id = ?", id).Delete(&mysql).Error
 	if err != nil {
 		log.Panicln(" delete mysql error", err.Error())
+	}
+	return
+}
+
+func (mysql *Mysql) Deletes(ids []interface{}) (err error) {
+	err = db.Where("id IN (?)", ids).Delete(&mysql).Error
+	if err != nil {
+		log.Panicln("list delete mysql error", err.Error())
+		return
 	}
 	return
 }
