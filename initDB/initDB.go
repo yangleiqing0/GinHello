@@ -20,7 +20,7 @@ func DbInit() *gorm.DB {
 }
 
 func NewConn() *gorm.DB {
-	db, err := gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/yang?charset=utf8&parseTime=true&loc=America%2FChicago")
+	db, err := gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/yanglei?charset=utf8&parseTime=true&loc=America%2FChicago")
 
 	//defer func() {
 	//	err := db.Close()
