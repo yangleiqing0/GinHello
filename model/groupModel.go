@@ -11,6 +11,11 @@ type Group struct {
 	UserId      int    `gorm:"column:user_id;default:1" json:"user_id"`
 }
 
+type GroupSimple struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
 func (group *Group) Detail(id int64) (*Group, error) {
 	err := db.Where("id = ?", id).First(&Group{}).Scan(&group).Error
 	if err != nil {
@@ -19,12 +24,20 @@ func (group *Group) Detail(id int64) (*Group, error) {
 	return group, err
 }
 
-func (group *Group) List(page, pagesize int64) (groups []Group, count int64, err error) {
+func (group *Group) List(page, pagesize int64) (groups []*Group, count int64, err error) {
 	err = Pagination(db.Order("updated_at desc, id desc"), page, pagesize).Find(&groups).Error
 	if err != nil {
 		return
 	}
 	err = db.Model(&group).Count(&count).Error
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (group *Group) ListAll() (groups []*GroupSimple, err error) {
+	err = db.Table("groups").Select("id, name").Scan(&groups).Error
 	if err != nil {
 		return
 	}

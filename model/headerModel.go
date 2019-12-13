@@ -12,6 +12,11 @@ type Header struct {
 	UserId      int    `gorm:"column:user_id;default:1" json:"user_id"`
 }
 
+type HeaderSimple struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
 func (header *Header) Detail(id int64) (*Header, error) {
 	err := db.Where("id = ?", id).First(&Header{}).Scan(&header).Error
 	if err != nil {
@@ -26,6 +31,14 @@ func (header *Header) List(page, pagesize int64) (headers []Header, count int64,
 		return
 	}
 	err = db.Model(&header).Count(&count).Error
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (header *Header) ListAll() (headers []HeaderSimple, err error) {
+	err = db.Table("headers").Select("id, name").Scan(&headers).Error
 	if err != nil {
 		return
 	}

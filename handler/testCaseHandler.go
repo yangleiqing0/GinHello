@@ -52,6 +52,12 @@ func TestCaseEdit(context *gin.Context) {
 
 func TestCaseList(context *gin.Context) {
 	var testCase model.TestCase
+
+	var g model.Group
+	var h model.Header
+	groups, err := g.ListAll()
+	headers, err := h.ListAll()
+
 	page, err := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
 
 	pagesize, err := strconv.ParseInt(context.DefaultQuery("pagesize", "10"), 10, 64)
@@ -64,7 +70,7 @@ func TestCaseList(context *gin.Context) {
 		context.JSON(http.StatusBadGateway, err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"list": testCases, "count": count})
+	context.JSON(http.StatusOK, gin.H{"list": testCases, "count": count, "groups": groups, "headers": headers})
 }
 
 func TestCaseDel(context *gin.Context) {
