@@ -8,14 +8,14 @@ import (
 
 type Mysql struct {
 	BaseModel
-	Name        string `gorm:"column:name;not null" binding:"required" json:"name"`
-	Ip          string `gorm:"column:ip;not null" binding:"required" json:"ip"`
-	Port        string `gorm:"column:port;not null" binding:"required" json:"port"`
-	Description string `gorm:"column:description" json:"description"`
-	OsUser      string `gorm:"column:os_user;not null" binding:"required" json:"user"`
-	Password    string `gorm:"column:password;not null" binding:"required" json:"password"`
-	DbName      string `gorm:"column:db_name;not null" binding:"required" json:"db_name"`
-	UserId      string `gorm:"column:user_id;default:'1'" json:"user_id"`
+	Name        string  `gorm:"column:name;not null" binding:"required" json:"name"`
+	Ip          string  `gorm:"column:ip;not null" binding:"required" json:"ip"`
+	Port        string  `gorm:"column:port;not null" binding:"required" json:"port"`
+	Description *string `gorm:"column:description" json:"description"`
+	OsUser      string  `gorm:"column:os_user;not null" binding:"required" json:"user"`
+	Password    string  `gorm:"column:password;not null" binding:"required" json:"password"`
+	DbName      string  `gorm:"column:db_name;not null" binding:"required" json:"db_name"`
+	UserId      string  `gorm:"column:user_id;default:'1'" json:"user_id"`
 }
 
 var db *gorm.DB
@@ -33,12 +33,12 @@ func (mysql *Mysql) Detail(id int64) (*Mysql, error) {
 	return mysql, err
 }
 
-func Pagination(db *gorm.DB, page, pagesize int64) *gorm.DB {
+func Pagination(db *gorm.DB, page, pagesize int) *gorm.DB {
 	db = db.Offset((page - 1) * pagesize).Limit(pagesize)
 	return db
 }
 
-func (mysql *Mysql) List(page, pagesize int64) (mysqls []Mysql, count int64, err error) {
+func (mysql *Mysql) List(page, pagesize int) (mysqls []Mysql, count int, err error) {
 	err = Pagination(db.Order("updated_at desc, id desc"), page, pagesize).Find(&mysqls).Error
 	if err != nil {
 		return

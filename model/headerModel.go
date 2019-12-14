@@ -6,10 +6,10 @@ import (
 
 type Header struct {
 	BaseModel
-	Name        string `gorm:"column:name;not null" binding:"required" json:"name"`
-	Value       string `gorm:"column:value;not null;type:text" binding:"required" json:"value"`
-	Description string `gorm:"column:description"  json:"description"`
-	UserId      int    `gorm:"column:user_id;default:1" json:"user_id"`
+	Name        string  `gorm:"column:name;not null" binding:"required" json:"name"`
+	Value       string  `gorm:"column:value;not null;type:text" binding:"required" json:"value"`
+	Description *string `gorm:"column:description"  json:"description"`
+	UserId      int     `gorm:"column:user_id;default:1" json:"user_id"`
 }
 
 type HeaderSimple struct {
@@ -25,7 +25,7 @@ func (header *Header) Detail(id int64) (*Header, error) {
 	return header, err
 }
 
-func (header *Header) List(page, pagesize int64) (headers []Header, count int64, err error) {
+func (header *Header) List(page, pagesize int) (headers []Header, count int64, err error) {
 	err = Pagination(db.Order("updated_at desc, id desc"), page, pagesize).Find(&headers).Error
 	if err != nil {
 		return

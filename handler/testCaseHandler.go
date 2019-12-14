@@ -13,11 +13,12 @@ func TestCaseDetail(context *gin.Context) {
 	var testCase model.TestCase
 
 	idString := context.Param("id")
-	id, _ := strconv.ParseInt(idString, 10, 64)
+	id, _ := strconv.Atoi(idString)
 
 	testCaseDetail, err := testCase.Detail(id)
 	if err != nil {
 		fmt.Println("query table testCase err = ", err)
+		context.JSON(http.StatusBadRequest, gin.H{"list": testCaseDetail, "err": err.Error()})
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"list": testCaseDetail})
@@ -58,9 +59,9 @@ func TestCaseList(context *gin.Context) {
 	groups, err := g.ListAll()
 	headers, err := h.ListAll()
 
-	page, err := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
+	page, err := strconv.Atoi(context.DefaultQuery("page", "1"))
 
-	pagesize, err := strconv.ParseInt(context.DefaultQuery("pagesize", "10"), 10, 64)
+	pagesize, err := strconv.Atoi(context.DefaultQuery("pagesize", "10"))
 
 	fmt.Println("page ")
 	testCases, count, err := testCase.List(page, pagesize)

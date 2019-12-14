@@ -13,7 +13,7 @@ func EmailDetail(context *gin.Context) {
 	var email model.Email
 
 	idString := context.Param("id")
-	id, _ := strconv.ParseInt(idString, 10, 64)
+	id, _ := strconv.Atoi(idString)
 
 	emailDetail, err := email.Detail(id)
 	if err != nil {
@@ -47,14 +47,14 @@ func EmailEdit(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"err": "save email err" + err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"msg": "save email success, id:" + strconv.FormatInt(id, 10)})
+	context.JSON(http.StatusOK, gin.H{"msg": "save email success, id:" + strconv.Itoa(id)})
 }
 
 func EmailList(context *gin.Context) {
 	var email model.Email
-	page, err := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
+	page, err := strconv.Atoi(context.DefaultQuery("page", "1"))
 
-	pagesize, err := strconv.ParseInt(context.DefaultQuery("pagesize", "10"), 10, 64)
+	pagesize, err := strconv.Atoi(context.DefaultQuery("pagesize", "10"))
 
 	fmt.Println("page ")
 	emails, count, err := email.List(page, pagesize)

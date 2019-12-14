@@ -6,9 +6,9 @@ import (
 
 type Group struct {
 	BaseModel
-	Name        string `gorm:"column:name;not null" binding:"required" json:"name"`
-	Description string `gorm:"column:description"  json:"description"`
-	UserId      int    `gorm:"column:user_id;default:1" json:"user_id"`
+	Name        string  `gorm:"column:name;not null" binding:"required" json:"name"`
+	Description *string `gorm:"column:description"  json:"description"`
+	UserId      int     `gorm:"column:user_id;default:1" json:"user_id"`
 }
 
 type GroupSimple struct {
@@ -16,7 +16,7 @@ type GroupSimple struct {
 	Name string `json:"name"`
 }
 
-func (group *Group) Detail(id int64) (*Group, error) {
+func (group *Group) Detail(id int) (*Group, error) {
 	err := db.Where("id = ?", id).First(&Group{}).Scan(&group).Error
 	if err != nil {
 		return group, err
@@ -24,7 +24,7 @@ func (group *Group) Detail(id int64) (*Group, error) {
 	return group, err
 }
 
-func (group *Group) List(page, pagesize int64) (groups []*Group, count int64, err error) {
+func (group *Group) List(page, pagesize int) (groups []*Group, count int, err error) {
 	err = Pagination(db.Order("updated_at desc, id desc"), page, pagesize).Find(&groups).Error
 	if err != nil {
 		return

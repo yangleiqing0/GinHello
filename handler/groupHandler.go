@@ -13,7 +13,7 @@ func GroupDetail(context *gin.Context) {
 	var group model.Group
 
 	idString := context.Param("id")
-	id, _ := strconv.ParseInt(idString, 10, 64)
+	id, _ := strconv.Atoi(idString)
 
 	groupDetail, err := group.Detail(id)
 	if err != nil {
@@ -52,9 +52,9 @@ func GroupEdit(context *gin.Context) {
 
 func GroupList(context *gin.Context) {
 	var group model.Group
-	page, err := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
+	page, err := strconv.Atoi(context.DefaultQuery("page", "1"))
 
-	pagesize, err := strconv.ParseInt(context.DefaultQuery("pagesize", "10"), 10, 64)
+	pagesize, err := strconv.Atoi(context.DefaultQuery("pagesize", "10"))
 
 	fmt.Println("page ")
 	groups, count, err := group.List(page, pagesize)

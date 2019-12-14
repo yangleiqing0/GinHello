@@ -22,7 +22,7 @@ func main() {
 	}()
 
 	// user未添加
-	Db.AutoMigrate(&model.Mysql{}, &model.Email{},
+	Db.AutoMigrate(&model.Mysql{}, &model.Email{}, &model.Wait{},
 		&model.Variable{}, &model.Group{}, &model.Header{}, &model.TestCase{})
 
 	_ = router.Run()

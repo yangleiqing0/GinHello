@@ -6,11 +6,11 @@ import (
 
 type Variable struct {
 	BaseModel
-	Name        string `gorm:"column:name;not null" binding:"required" json:"name"`
-	Value       string `gorm:"column:value;not null;type:text" binding:"required" json:"value"`
-	IsPrivate   uint8  `gorm:"column:is_private" json:"is_private"`
-	Description string `gorm:"column:description"  json:"description"`
-	UserId      int    `gorm:"column:user_id;default:1" json:"user_id"`
+	Name        string  `gorm:"column:name;not null" binding:"required" json:"name"`
+	Value       string  `gorm:"column:value;not null;type:text" binding:"required" json:"value"`
+	IsPrivate   *uint8  `gorm:"column:is_private" json:"is_private"`
+	Description *string `gorm:"column:description"  json:"description"`
+	UserId      int     `gorm:"column:user_id;default:1" json:"user_id"`
 }
 
 func (variable *Variable) Detail(id int64) (*Variable, error) {
@@ -21,7 +21,7 @@ func (variable *Variable) Detail(id int64) (*Variable, error) {
 	return variable, err
 }
 
-func (variable *Variable) List(page, pagesize int64) (variables []Variable, count int64, err error) {
+func (variable *Variable) List(page, pagesize int) (variables []Variable, count int, err error) {
 	err = Pagination(db.Order("updated_at desc, id desc"), page, pagesize).Find(&variables).Error
 	if err != nil {
 		return

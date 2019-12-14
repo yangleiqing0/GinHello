@@ -55,9 +55,9 @@ func MysqlEdit(context *gin.Context) {
 
 func MysqlList(context *gin.Context) {
 	var mysql model.Mysql
-	page, err := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
+	page, err := strconv.Atoi(context.DefaultQuery("page", "1"))
 
-	pagesize, err := strconv.ParseInt(context.DefaultQuery("pagesize", "10"), 10, 64)
+	pagesize, err := strconv.Atoi(context.DefaultQuery("pagesize", "10"))
 
 	fmt.Println("page ")
 	mysqls, count, err := mysql.List(page, pagesize)

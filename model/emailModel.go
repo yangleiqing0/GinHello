@@ -13,7 +13,7 @@ type Email struct {
 	UserId      int    `gorm:"column:user_id;default:1" json:"user_id"`
 }
 
-func (email *Email) Detail(id int64) (*Email, error) {
+func (email *Email) Detail(id int) (*Email, error) {
 	err := db.Where("id = ?", id).First(&Email{}).Scan(&email).Error
 	if err != nil {
 		return email, err
@@ -21,7 +21,7 @@ func (email *Email) Detail(id int64) (*Email, error) {
 	return email, err
 }
 
-func (email *Email) List(page, pagesize int64) (emails []Email, count int64, err error) {
+func (email *Email) List(page, pagesize int) (emails []Email, count int, err error) {
 	err = Pagination(db.Order("updated_at desc, id desc"), page, pagesize).Find(&emails).Error
 	if err != nil {
 		return
@@ -33,14 +33,14 @@ func (email *Email) List(page, pagesize int64) (emails []Email, count int64, err
 	return
 }
 
-func (email *Email) Save() (id int64, err error) {
+func (email *Email) Save() (id int, err error) {
 
 	err = db.Create(email).Error
 	if err != nil {
 		log.Panicln(" save email error", err.Error())
 		return
 	}
-	id = int64(email.ID)
+	id = email.ID
 	return
 }
 

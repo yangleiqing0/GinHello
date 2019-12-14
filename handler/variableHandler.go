@@ -52,9 +52,9 @@ func VariableEdit(context *gin.Context) {
 
 func VariableList(context *gin.Context) {
 	var variable model.Variable
-	page, err := strconv.ParseInt(context.DefaultQuery("page", "1"), 10, 64)
+	page, err := strconv.Atoi(context.DefaultQuery("page", "1"))
 
-	pagesize, err := strconv.ParseInt(context.DefaultQuery("pagesize", "10"), 10, 64)
+	pagesize, err := strconv.Atoi(context.DefaultQuery("pagesize", "10"))
 
 	fmt.Println("page ")
 	variables, count, err := variable.List(page, pagesize)
