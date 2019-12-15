@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"log"
 )
 
@@ -65,6 +66,46 @@ func (variable *Variable) Deletes(ids []interface{}) (err error) {
 	err = db.Where("id IN (?)", ids).Delete(&variable).Error
 	if err != nil {
 		log.Panicln("list delete variable error", err.Error())
+		return
+	}
+	return
+}
+
+func UpdateVariableNameValidate(variableId, userId int, name string) (result bool, err error) {
+	var count int
+	err = db.Table("variables").Where("id != ? and name = ? and user_id = ?", variableId, name, userId).Count(&count).Error
+	if err != nil {
+		fmt.Println("UpdateVariableNameValidate err = ", err)
+		return
+	}
+	result = count == 0
+	return
+}
+
+func QueryVariable(name string, userId int) (variable *Variable, err error) {
+	err = db.Model(&variable).Where("name = ? and user_id = ?", name, userId).First(&variable).Error
+
+	if err != nil {
+		fmt.Println("QueryVariable err = ", err)
+		return
+	}
+	return
+}
+
+func QueryVariableCount(name string, id, userId int) (count int, err error) {
+	if id != 0 {
+		err = db.Table("variables").Where("name = ? and id != ? and user_id = ?", name, id, userId).Count(&count).Error
+
+		if err != nil {
+			fmt.Println("QueryVariableCount id!=0 err = ", err)
+			return
+		}
+		return
+	}
+	err = db.Table("variables").Where("name = ? and user_id = ?", name, userId).Count(&count).Error
+
+	if err != nil {
+		fmt.Println("QueryVariableCount id=0 err = ", err)
 		return
 	}
 	return

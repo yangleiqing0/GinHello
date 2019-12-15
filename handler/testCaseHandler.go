@@ -18,17 +18,17 @@ func TestCaseDetail(context *gin.Context) {
 	testCaseDetail, err := testCase.Detail(id)
 	if err != nil {
 		fmt.Println("query table testCase err = ", err)
-		context.JSON(http.StatusBadRequest, gin.H{"list": testCaseDetail, "err": err.Error()})
+		context.JSON(http.StatusBadRequest, Data{"list": testCaseDetail, "err": err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"list": testCaseDetail})
+	context.JSON(http.StatusOK, Data{"list": testCaseDetail})
 }
 
 func TestCaseEdit(context *gin.Context) {
 	var testCase model.TestCase
 
 	if err := context.ShouldBind(&testCase); err != nil {
-		context.JSON(http.StatusOK, gin.H{"err": "输入的数据不合法"})
+		context.JSON(http.StatusOK, Data{"err": "输入的数据不合法"})
 		log.Panicln("err ->", err.Error())
 		return
 	}
@@ -36,19 +36,19 @@ func TestCaseEdit(context *gin.Context) {
 		err := testCase.Update()
 		if err != nil {
 			fmt.Println("update testCase err = ", err)
-			context.JSON(http.StatusBadRequest, gin.H{"err": "update testCase err" + err.Error()})
+			context.JSON(http.StatusBadRequest, Data{"err": "update testCase err" + err.Error()})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"msg": "update testCase success"})
+		context.JSON(http.StatusOK, Data{"msg": "update testCase success"})
 		return
 	}
 	id, err := testCase.Save()
 	if err != nil {
 		fmt.Println("save testCase err ", err)
-		context.JSON(http.StatusBadRequest, gin.H{"err": "save testCase err" + err.Error()})
+		context.JSON(http.StatusBadRequest, Data{"err": "save testCase err" + err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"msg": "save testCase success, id:" + strconv.FormatInt(id, 10)})
+	context.JSON(http.StatusOK, Data{"msg": "save testCase success, id:" + strconv.FormatInt(id, 10)})
 }
 
 func TestCaseList(context *gin.Context) {
@@ -71,7 +71,7 @@ func TestCaseList(context *gin.Context) {
 		context.JSON(http.StatusBadGateway, err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"list": testCases, "count": count, "groups": groups, "headers": headers})
+	context.JSON(http.StatusOK, Data{"list": testCases, "count": count, "groups": groups, "headers": headers})
 }
 
 func TestCaseDel(context *gin.Context) {
@@ -82,7 +82,7 @@ func TestCaseDel(context *gin.Context) {
 
 	if err != nil {
 		log.Println("json.Unmarshal err = ", err)
-		context.JSON(http.StatusOK, gin.H{"err": "get ids error"})
+		context.JSON(http.StatusOK, Data{"err": "get ids error"})
 		return
 	}
 
@@ -91,18 +91,65 @@ func TestCaseDel(context *gin.Context) {
 	case float64:
 		if err = testCase.Delete(ids); err != nil {
 			fmt.Println("delete testCase err :", err)
-			context.JSON(http.StatusBadRequest, gin.H{"err": err})
+			context.JSON(http.StatusBadRequest, Data{"err": err})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"msg": "del success"})
+		context.JSON(http.StatusOK, Data{"msg": "del success"})
 		return
 	case []interface{}:
 		if err = testCase.Deletes(ids); err != nil {
 			fmt.Println("list delete testCase err :", err)
-			context.JSON(http.StatusBadRequest, gin.H{"err": err})
+			context.JSON(http.StatusBadRequest, Data{"err": err})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"msg": "del list success"})
+		context.JSON(http.StatusOK, Data{"msg": "del list success"})
 	}
 
+}
+
+func TestCaseNameValidate(context *gin.Context) {
+
+	result, err := NameValidate(context, "test_cases")
+	if err != nil {
+		fmt.Println("err = ", err)
+		context.JSON(http.StatusBadRequest, Data{"err": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, result)
+}
+
+func TestCaseRegularValidate(context *gin.Context) {
+	var params = struct {
+		Regular string `json:"regular"`
+		UserId  int    `json:"user_id"`
+	}{}
+
+	err := context.BindJSON(&params)
+	if err != nil {
+		fmt.Println("TestCaseRegularValidate err = ", err)
+		context.JSON(http.StatusOK, Data{"err": err.Error()})
+		return
+	}
+
+	regular := params.Regular
+	result := model.RegularValidate(regular)
+
+	context.JSON(http.StatusOK, result)
+}
+
+func TestCaseHopeValidate(context *gin.Context) {
+	var params = struct {
+		HopeResult string `json:"hope_result"`
+		UserId     int    `json:"user_id"`
+	}{}
+
+	err := context.BindJSON(&params)
+	if err != nil {
+		fmt.Println("TestCaseHopeValidate err = ", err)
+		context.JSON(http.StatusOK, Data{"err": err.Error()})
+		return
+	}
+
+	result := model.HopeResultValidate(params.HopeResult)
+	context.JSON(http.StatusOK, result)
 }

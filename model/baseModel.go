@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type BaseModel struct {
 	ID        int        `gorm:"column:id;primary_key" json:"id"`

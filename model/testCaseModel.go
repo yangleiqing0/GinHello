@@ -1,8 +1,11 @@
 package model
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 	"log"
+	"proxy_download/common"
+	"strings"
 )
 
 type TestCase struct {
@@ -116,4 +119,86 @@ func (testCase *TestCase) Deletes(ids []interface{}) (err error) {
 	}
 	_ = db.Table("waits").Where("testcase_id IN (?)", ids).Delete(testCase.Wait).Error
 	return
+}
+
+func UpdateCaseRegisterNameValidate(testCaseId, userId int, registerVariable string) (result bool, err error) {
+	registerVariables := strings.Split(registerVariable, ",")
+
+	var testCase = struct {
+		RegisterVariable string `json:"register_variable"`
+	}{}
+
+	err = db.Table("test_cases").Select("register_variable").Where("id = ?", testCaseId).Scan(&testCase).Error
+	if err != nil {
+		fmt.Println("UpdateCaseRegisterNameValidate query register_variable err = ", err)
+		return
+	}
+	caseRegisterVariable := testCase.RegisterVariable
+	caseRegisterVariables := strings.Split(caseRegisterVariable, ",")
+	if len(common.SliceToMap(registerVariables)) != len(registerVariables) {
+		return
+	}
+
+	if SliceEq(registerVariables, caseRegisterVariables) {
+		return true, nil
+	}
+
+	for _, vbName := range registerVariables {
+		variable, err := QueryVariable(vbName, userId)
+		var count int
+		if err != nil {
+			count, _ = QueryVariableCount(vbName, 0, userId)
+		} else {
+			count, _ = QueryVariableCount(vbName, variable.ID, userId)
+		}
+
+		if count != 0 {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func RegularValidate(regular string) (result bool) {
+
+	regulars := strings.Split(regular, ",")
+	for _, re := range regulars {
+		if strings.Index(re, "$") != -1 {
+			if re[1] != '.' || re[0] != '$' {
+				return false
+			}
+
+			res := strings.Split(re, ".")
+			if len(res) != len(common.SliceToMap(res)) {
+				return false
+			} else {
+				if strings.Index(re, " ") != -1 {
+					return false
+				}
+			}
+		}
+	}
+
+	return true
+}
+
+func HopeResultValidate(hopeResult string) bool {
+
+	hopeResults := strings.Split(hopeResult, ",")
+	for _, hope := range hopeResults {
+		hopes := strings.Split(hope, ":")
+		if len(hopes) == 2 {
+			r, _ := common.IsStringSliceHas(hopes[0], []string{"包含", "不包含", "等于", "不等于"})
+			if r == false {
+				return false
+			}
+			if hopes[1] == "" {
+				return false
+			}
+		}
+		if len(hopes) == 1 {
+			return false
+		}
+	}
+	return true
 }

@@ -16,6 +16,7 @@ func SetupRouter() *gin.Engine {
 		mysql.GET("/list", handler.MysqlList)
 		mysql.POST("/del", handler.MysqlDel)
 		mysql.POST("/edit", handler.MysqlEdit)
+		mysql.POST("/name_validate", handler.MysqlNameValidate)
 	}
 	email := router.Group("/email")
 	{
@@ -23,6 +24,8 @@ func SetupRouter() *gin.Engine {
 		email.GET("/list", handler.EmailList)
 		email.POST("/del", handler.EmailDel)
 		email.POST("/edit", handler.EmailEdit)
+		email.POST("/name_validate", handler.EmailNameValidate)
+		email.POST("/user_list_validate", handler.EmailToUserListValidate)
 	}
 	variable := router.Group("/variable")
 	{
@@ -30,6 +33,7 @@ func SetupRouter() *gin.Engine {
 		variable.GET("/list", handler.VariableList)
 		variable.POST("/del", handler.VariableDel)
 		variable.POST("/edit", handler.VariableEdit)
+		variable.POST("/name_validate", handler.VariableNameValidate)
 	}
 	group := router.Group("/group")
 	{
@@ -37,6 +41,7 @@ func SetupRouter() *gin.Engine {
 		group.GET("/list", handler.GroupList)
 		group.POST("/del", handler.GroupDel)
 		group.POST("/edit", handler.GroupEdit)
+		group.POST("/name_validate", handler.GroupNameValidate)
 	}
 	header := router.Group("/header")
 	{
@@ -44,6 +49,8 @@ func SetupRouter() *gin.Engine {
 		header.GET("/list", handler.HeaderList)
 		header.POST("/del", handler.HeaderDel)
 		header.POST("/edit", handler.HeaderEdit)
+		header.POST("/name_validate", handler.HeaderNameValidate)
+		header.POST("/value_validate", handler.HeaderValueValidate)
 	}
 	testCase := router.Group("/case")
 	{
@@ -51,6 +58,9 @@ func SetupRouter() *gin.Engine {
 		testCase.GET("/list", handler.TestCaseList)
 		testCase.POST("/del", handler.TestCaseDel)
 		testCase.POST("/edit", handler.TestCaseEdit)
+		testCase.POST("/name_validate", handler.TestCaseNameValidate)
+		testCase.POST("/regular_validate", handler.TestCaseRegularValidate)
+		testCase.POST("/hope_validate", handler.TestCaseHopeValidate)
 	}
 	user := router.Group("/user")
 	{

@@ -99,3 +99,14 @@ func GroupDel(context *gin.Context) {
 	}
 
 }
+
+func GroupNameValidate(context *gin.Context) {
+
+	result, err := NameValidate(context, "groups")
+	if err != nil {
+		fmt.Println("err = ", err)
+		context.JSON(http.StatusBadRequest, Data{"err": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, result)
+}

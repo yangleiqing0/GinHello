@@ -34,7 +34,7 @@ func (mysql *Mysql) Detail(id int64) (*Mysql, error) {
 }
 
 func Pagination(db *gorm.DB, page, pagesize int) *gorm.DB {
-	db = db.Offset((page - 1) * pagesize).Limit(pagesize)
+	db = db.Where("user_id = ?", 1).Offset((page - 1) * pagesize).Limit(pagesize)
 	return db
 }
 

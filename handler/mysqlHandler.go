@@ -23,14 +23,14 @@ func MysqlDetail(context *gin.Context) {
 		return
 	}
 	log.Printf("mysql is %v", mysqlDetail.Ip)
-	context.JSON(http.StatusOK, gin.H{"list": mysqlDetail})
+	context.JSON(http.StatusOK, Data{"list": mysqlDetail})
 }
 
 func MysqlEdit(context *gin.Context) {
 	var mysql model.Mysql
 
 	if err := context.ShouldBind(&mysql); err != nil {
-		context.JSON(http.StatusOK, gin.H{"err": "输入的数据不合法"})
+		context.JSON(http.StatusOK, Data{"err": "输入的数据不合法"})
 		log.Panicln("err ->", err.Error())
 		return
 	}
@@ -38,19 +38,19 @@ func MysqlEdit(context *gin.Context) {
 		err := mysql.Update()
 		if err != nil {
 			fmt.Println("update mysql err = ", err)
-			context.JSON(http.StatusBadRequest, gin.H{"err": "update mysql err" + err.Error()})
+			context.JSON(http.StatusBadRequest, Data{"err": "update mysql err" + err.Error()})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"msg": "update mysql success"})
+		context.JSON(http.StatusOK, Data{"msg": "update mysql success"})
 		return
 	}
 	id, err := mysql.Save()
 	if err != nil {
 		fmt.Println("save mysql err ", err)
-		context.JSON(http.StatusBadRequest, gin.H{"err": "save mysql err" + err.Error()})
+		context.JSON(http.StatusBadRequest, Data{"err": "save mysql err" + err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"msg": "save mysql success, id:" + strconv.FormatInt(id, 10)})
+	context.JSON(http.StatusOK, Data{"msg": "save mysql success, id:" + strconv.FormatInt(id, 10)})
 }
 
 func MysqlList(context *gin.Context) {
@@ -67,7 +67,7 @@ func MysqlList(context *gin.Context) {
 		context.JSON(http.StatusBadGateway, err)
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"list": mysqls, "count": count})
+	context.JSON(http.StatusOK, Data{"list": mysqls, "count": count})
 }
 
 func MysqlDel(context *gin.Context) {
@@ -78,7 +78,7 @@ func MysqlDel(context *gin.Context) {
 
 	if err != nil {
 		log.Println("json.Unmarshal err = ", err)
-		context.JSON(http.StatusOK, gin.H{"err": "get ids error"})
+		context.JSON(http.StatusOK, Data{"err": "get ids error"})
 		return
 	}
 
@@ -87,18 +87,29 @@ func MysqlDel(context *gin.Context) {
 	case float64:
 		if err = mysql.Delete(ids); err != nil {
 			fmt.Println("delete mysql err :", err)
-			context.JSON(http.StatusBadRequest, gin.H{"err": err})
+			context.JSON(http.StatusBadRequest, Data{"err": err})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"msg": "del success"})
+		context.JSON(http.StatusOK, Data{"msg": "del success"})
 		return
 	case []interface{}:
 		if err = mysql.Deletes(ids); err != nil {
 			fmt.Println("list delete mysql err :", err)
-			context.JSON(http.StatusBadRequest, gin.H{"err": err})
+			context.JSON(http.StatusBadRequest, Data{"err": err})
 			return
 		}
-		context.JSON(http.StatusOK, gin.H{"msg": "del list success"})
+		context.JSON(http.StatusOK, Data{"msg": "del list success"})
 	}
 
+}
+
+func MysqlNameValidate(context *gin.Context) {
+
+	result, err := NameValidate(context, "mysqls")
+	if err != nil {
+		fmt.Println("MysqlNameValidate err = ", err)
+		context.JSON(http.StatusBadRequest, Data{"err": err.Error()})
+		return
+	}
+	context.JSON(http.StatusOK, result)
 }
