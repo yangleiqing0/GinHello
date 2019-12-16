@@ -20,6 +20,5 @@ func UpdateNameValidate(name, tableName string, id, userId int) (result bool, er
 		fmt.Println("count UpdateNameValidate err = ", err)
 		return
 	}
-	result = count == 0
-	return
+	return count == 0, nil
 }

@@ -48,7 +48,7 @@ func TestCaseEdit(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, Data{"err": "save testCase err" + err.Error()})
 		return
 	}
-	context.JSON(http.StatusOK, Data{"msg": "save testCase success, id:" + strconv.FormatInt(id, 10)})
+	context.JSON(http.StatusOK, Data{"msg": "save testCase success, id:" + strconv.Itoa(id)})
 }
 
 func TestCaseList(context *gin.Context) {
@@ -151,5 +151,40 @@ func TestCaseHopeValidate(context *gin.Context) {
 	}
 
 	result := model.HopeResultValidate(params.HopeResult)
+	context.JSON(http.StatusOK, result)
+}
+
+func TestCaseSqlVariableValidate(context *gin.Context) {
+
+	var params = struct {
+		Id          int    `json:"id"`
+		SqlVariable string `json:"sql_variable"`
+		UserId      int    `json:"user_id"`
+	}{}
+
+	err := context.BindJSON(&params)
+	if err != nil {
+		fmt.Println("TestCaseSqlVariableValidate err = ", err)
+		context.JSON(http.StatusOK, Data{"err": err.Error()})
+		return
+	}
+
+	if params.Id != 0 {
+		result, err := model.UpdateSqlVariableValidate(params.SqlVariable, params.Id, params.UserId)
+		if err != nil {
+			fmt.Println("model.UpdateSqlVariableValidate err = ", err)
+			context.JSON(http.StatusOK, Data{"err": err.Error()})
+			return
+		}
+		context.JSON(http.StatusOK, result)
+		return
+	}
+
+	result, err := model.CreateSqlVariableValidate(params.SqlVariable, params.UserId)
+	if err != nil {
+		fmt.Println("model.CreateSqlVariableValidate err = ", err)
+		context.JSON(http.StatusOK, Data{"err": err.Error()})
+		return
+	}
 	context.JSON(http.StatusOK, result)
 }

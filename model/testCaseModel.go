@@ -63,13 +63,15 @@ func (testCase *TestCase) List(page, pagesize int) (testCases []TestCase, count 
 	return
 }
 
-func (testCase *TestCase) Save() (id int64, err error) {
+func (testCase *TestCase) Save() (id int, err error) {
 
 	err = db.Create(testCase).Error
 	if err != nil {
 		log.Panicln(" save testCase error", err.Error())
 		return
 	}
+
+	testCase.SaveCreateVariable()
 
 	var wait = &testCase.Wait
 	wait.TestCaseId = &testCase.ID
@@ -80,7 +82,7 @@ func (testCase *TestCase) Save() (id int64, err error) {
 		return
 	}
 
-	id = int64(testCase.ID)
+	id = testCase.ID
 	return
 }
 
@@ -91,6 +93,7 @@ func (testCase *TestCase) Update() (err error) {
 		log.Panicln(" update testCase error", err.Error())
 	}
 
+	testCase.SaveCreateVariable()
 	var wait = &testCase.Wait
 
 	err1 := wait.Update(testCase.ID)
@@ -102,23 +105,71 @@ func (testCase *TestCase) Update() (err error) {
 }
 
 func (testCase *TestCase) Delete(id float64) (err error) {
+	testCase.DelCaseDelVariable(id)
 	err = db.Where("id = ?", id).Delete(&testCase).Error
 	if err != nil {
 		log.Panicln(" delete testCase error", err.Error())
 		return
 	}
-	_ = db.Table("waits").Where("testcase_id = ?", id).Delete(testCase.Wait).Error
+	_ = db.Where("testcase_id = ?", id).Delete(&Wait{}).Error
 	return
 }
 
 func (testCase *TestCase) Deletes(ids []interface{}) (err error) {
+	type variable struct {
+		OldSqlRegisterVariable string `json:"old_sql_register_variable"`
+		NewSqlRegisterVariable string `json:"new_sql_register_variable"`
+	}
+	var names []variable
+	var variableNames []string
+	db.Table("test_cases").Select("old_sql_register_variable, new_sql_register_variable").Where("id IN (?)", ids).Scan(&names)
+	for i := 0; i < len(names); i++ {
+		if names[i].OldSqlRegisterVariable != "" {
+			variableNames = append(variableNames, names[i].OldSqlRegisterVariable)
+		}
+		if names[i].NewSqlRegisterVariable != "" {
+			variableNames = append(variableNames, names[i].NewSqlRegisterVariable)
+		}
+	}
+
 	err = db.Where("id IN (?)", ids).Delete(&testCase).Error
+	db.Where("name IN (?)", variableNames).Delete(&Variable{})
 	if err != nil {
 		log.Panicln("list delete testCase error", err.Error())
 		return
 	}
-	_ = db.Table("waits").Where("testcase_id IN (?)", ids).Delete(testCase.Wait).Error
+	db.Where("testcase_id IN (?)", ids).Delete(&Wait{})
 	return
+}
+
+func (testCase *TestCase) SaveCreateVariable() {
+	if testCase.OldSqlRegisterVariable != nil {
+		if len(strings.Trim(*testCase.OldSqlRegisterVariable, " ")) > 0 {
+			var variable Variable
+			variable.Name = *testCase.OldSqlRegisterVariable
+			_, _ = variable.Save()
+		}
+	}
+	if testCase.NewSqlRegisterVariable != nil {
+		if len(strings.Trim(*testCase.NewSqlRegisterVariable, " ")) > 0 {
+			var variable Variable
+			variable.Name = *testCase.NewSqlRegisterVariable
+			_, _ = variable.Save()
+		}
+	}
+
+}
+
+func (testCase *TestCase) DelCaseDelVariable(id float64) {
+	var testCase2 TestCase
+	db.Where("id = ?", id).Find(&testCase2)
+	log.Println("DelCaseDelVariable ", testCase2.OldSqlRegisterVariable, testCase2.NewSqlRegisterVariable)
+	if testCase2.OldSqlRegisterVariable != nil {
+		db.Where("name = ?", testCase2.OldSqlRegisterVariable).Delete(&Variable{})
+	}
+	if testCase2.NewSqlRegisterVariable != nil {
+		db.Where("name = ?", testCase2.NewSqlRegisterVariable).Delete(&Variable{})
+	}
 }
 
 func UpdateCaseRegisterNameValidate(testCaseId, userId int, registerVariable string) (result bool, err error) {
@@ -201,4 +252,57 @@ func HopeResultValidate(hopeResult string) bool {
 		}
 	}
 	return true
+}
+
+func CreateSqlVariableValidate(SqlVariable string, UserId int) (result bool, err error) {
+	var count int
+	if SqlVariable == "" {
+		return true, nil
+	}
+	err = db.Table("variables").Where("name = ? and user_id = ?", SqlVariable, UserId).Count(&count).Error
+	if err != nil {
+		fmt.Println("CreateSqlVariableValidate count err = ", err)
+		return false, err
+	}
+
+	return count == 0, nil
+}
+
+func UpdateSqlVariableValidate(SqlVariable string, Id, UserId int) (result bool, err error) {
+	var params = struct {
+		OldSqlRegisterVariable string `json:"old_sql_register_variable"`
+		NewSqlRegisterVariable string `json:"new_sql_register_variable"`
+	}{}
+	if SqlVariable == "" {
+		return true, nil
+	}
+
+	err = db.Table("test_cases").Where("id = ?", Id).Scan(&params).Error
+	if err != nil {
+		fmt.Println("UpdateSqlVariableValidate query test_ cases err = ", err)
+		return
+	}
+
+	r, _ := common.IsStringSliceHas(SqlVariable, []string{params.OldSqlRegisterVariable, params.NewSqlRegisterVariable})
+	if r {
+		return true, nil
+	}
+
+	type variableSimple struct {
+		Id int `json:"id"`
+	}
+
+	var variable variableSimple
+
+	err = db.Table("variables").Where("name = ? and user_id = ?", SqlVariable, UserId).Scan(&variable).Error
+	if err != nil {
+		if err != gorm.ErrRecordNotFound {
+			fmt.Println("UpdateSqlVariableValidate query variables scan err = ", err)
+			return false, err
+		}
+		return true, nil
+	}
+
+	return false, err
+
 }

@@ -40,7 +40,7 @@ func (wait *Wait) Update(testCaseId int) (err error) {
 		return err
 	}
 
-	err = queryWait.Update(wait).Error
+	err = db.Model(&wait).Update(wait).Error
 	if err != nil {
 		log.Panicln(" update wait error", err.Error())
 	}

@@ -61,6 +61,7 @@ func SetupRouter() *gin.Engine {
 		testCase.POST("/name_validate", handler.TestCaseNameValidate)
 		testCase.POST("/regular_validate", handler.TestCaseRegularValidate)
 		testCase.POST("/hope_validate", handler.TestCaseHopeValidate)
+		testCase.POST("/sql_variable_validate", handler.TestCaseSqlVariableValidate)
 	}
 	user := router.Group("/user")
 	{
